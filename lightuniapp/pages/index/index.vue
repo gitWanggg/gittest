@@ -19,11 +19,9 @@
 		<view class="canvas-box">
 			<view >
 				
-			 <canvas ref="canvasId" @touchstart="touchstart"
-			  @touchmove="touchmove" @touchend="touchend"  
-			  @mousedown="touchstart"
-			  @mousemove="touchmove"
-			@mouseup="touchend"
+			 <canvas ref="canvasId" @touchstart.stop="touchstart"
+			  @touchmove.stop="touchmove" @touchend.stop="touchend"  
+			
 			  canvas-id="canvasId" id="canvasId" 
 			  style="width: 400px; height: 300px;">
 			</canvas>

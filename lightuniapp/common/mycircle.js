@@ -85,9 +85,12 @@
   //       };
 
         function getXY(e, obj) {
+			//console.log(objuni);
+			
             let et = e.touches &&e.touches.length ? e.touches[0] : e;
-            let x = et.clientX;
-            let y = et.clientY;
+			console.log(et);
+            let x = et.clientX||et.x;
+            let y = et.clientY||et.y;
             return {
                 x: x - objuni.left,//obj.offsetLeft + (document.body.scrollLeft || document.documentElement.scrollLeft),
                 y: y - objuni.top//obj.offsetTop + (document.body.scrollTop || document.documentElement.scrollTop)
@@ -126,7 +129,13 @@ export function createconvas(ctxarg,regchange,mepage) {
 		  }
 
 }
+let tsnow=0;
 export function convastrigger(func,e){
+	var timestamp=new Date().getTime();
+	let tsdiff=timestamp-tsnow;
+	if(tsdiff<20)
+	 	return;
+	tsnow=timestamp;
 	if(func==0){
 		 moveFlag = true;
 	}
