@@ -1,8 +1,8 @@
  let canvas = null;
         let ctx = null;
-        let ox = 200;
-        let oy = 150;
-        let or = 140; //大圆半径
+        let ox = 0;
+        let oy = 0;
+        let or = 0; //大圆半径
         let br = 10; //小圆半径
         let moveFlag = false;
         let n0 = 0; //左圆
@@ -10,10 +10,31 @@
         let moon = new Image();
         let sun = new Image();
         let am = new Image();
-		let convaswidth=400;
-		let convasheight=300;
+		let convaswidth=0;
+		let convasheight=0;
+		let convasleft=0;
+		let convastop=0;
+		
+		let pmx=0;//图片pm
+		let pmy=0;//图片pm;
+		let pmwidth=0;
+		let pmheidth=0;
+		
+		let ring=20;//圆环宽度
+		
 
         let onprochange = null;
+		
+		let pointsun={
+			x:0,
+			y:0
+		};
+		let pointmoon={
+			x:0,
+			y:0
+		}
+		let ceps=30;//触点误差范围
+
 		
 		let moonsrc="/static/ico/moonx16.png";
 		let sunsrc="/static/ico/sunx16.png";
@@ -30,13 +51,13 @@
         function draw() {
             ctx.clearRect(0, 0, convaswidth, convasheight);
             ctx.strokeStyle = "#99a";
-            ctx.lineWidth = 20;
+            ctx.lineWidth = ring;
             ctx.beginPath();
             // ctx.arc(ox, oy, or, 0, Math.PI, true);//半圆
             ctx.arc(ox, oy, or, 0, 2 * Math.PI, true);//整圆
             ctx.stroke();
             ctx.strokeStyle = "#69f"; //背景圆环
-            ctx.lineWidth = 20;
+            ctx.lineWidth = ring;
             ctx.beginPath();
             ctx.arc(ox, oy, or, 0.5*Math.PI, (n1 * 2 + 0.5) * Math.PI, true);
 
@@ -58,17 +79,21 @@
             ctx.beginPath();
             let d = offset(n1 * 2 * Math.PI, or);
 
-
-            ctx.drawImage(sunsrc, 0, 0, 16, 16, ox + d.x-br, oy + d.y-br, 16, 16);
+			pointsun.x=ox + d.x-br;
+			pointsun.y=oy + d.y-br;
+            ctx.drawImage(sunsrc, 0, 0, 16, 16, pointsun.x,pointsun.y , 16, 16);
+			
             //ctx.arc(ox + d.x, oy + d.y, br, 0, 2 * Math.PI, true);
 
             let d2 = offset(n0 * 2 * Math.PI, or);
            // ctx.arc(ox + d2.x, oy + d2.y, br, 0, 2 * Math.PI, true);
 
-            ctx.drawImage(moonsrc, 0, 0, 16, 16, ox + d2.x - br, oy + d2.y - br, 16, 16);
+			pointmoon.x=ox + d2.x - br;
+			pointmoon.y=oy + d2.y - br;
+            ctx.drawImage(moonsrc, 0, 0, 16, 16,pointmoon.x , pointmoon.y, 16, 16);
 
 
-            ctx.drawImage(amsrc, 0, 0, 320, 320,73,25,250,250);
+            ctx.drawImage(amsrc, 0, 0, 320, 320,pmx,pmy,pmwidth,pmheidth);
 
             ctx.fill();
 			ctx.draw()
@@ -88,12 +113,14 @@
 			//console.log(objuni);
 			
             let et = e.touches &&e.touches.length ? e.touches[0] : e;
-			console.log(et);
+			//console.log("et",et);
             let x = et.clientX||et.x;
             let y = et.clientY||et.y;
             return {
                 x: x - objuni.left,//obj.offsetLeft + (document.body.scrollLeft || document.documentElement.scrollLeft),
-                y: y - objuni.top//obj.offsetTop + (document.body.scrollTop || document.documentElement.scrollTop)
+                y: y - objuni.top,//obj.offsetTop + (document.body.scrollTop || document.documentElement.scrollTop)
+				px:x,
+				py:y
             }
         }
 
@@ -104,10 +131,27 @@
                 draw(0);
         }
         
+function initvalues(){
+	convasheight=objuni.height;
+	convaswidth=objuni.width;
+	convasleft=objuni.left;
+	convastop=objuni.top;
+	ox=convaswidth/2;
+	oy=convasheight/2;
+	or=convaswidth/2-ring/2;
+	pmx=ring;
+	pmy=ring;
+	pmheidth=(or-ring)*2+ring;
+	pmwidth=(or-ring)*2+ring;
+}		
+		
 export function createconvas(ctxarg,regchange,mepage) {
 		onprochange = regchange;
 	    ctx	 =	ctxarg;
 		objuni=mepage;
+		
+		initvalues();
+		//console.log("objuni:", objuni);
 		moon.src = moonsrc;
 		  moon.onload = function () {
 			  isloadok += 1;
@@ -130,6 +174,27 @@ export function createconvas(ctxarg,regchange,mepage) {
 
 }
 let tsnow=0;
+
+const partrad=694;
+const partrad2=0.006944;
+const partrad3=0.006948;
+function verifyradian(rad){ //校验弧度
+	let diffrad= rad-0.5;
+	let npart =parseInt( parseInt(diffrad*100000)/partrad);
+	
+	let nf = 0.5+npart*partrad2;	
+	return nf;
+}
+function verifyradian2(rad){ //校验弧度
+	
+	let npart =parseInt( parseInt(rad*100000)/partrad);
+	
+	let nf = npart*partrad3;
+	
+	console.log("rad, npart,nf:",rad,npart, nf);
+	return nf;
+}
+
 export function convastrigger(func,e){
 	var timestamp=new Date().getTime();
 	let tsdiff=timestamp-tsnow;
@@ -143,17 +208,33 @@ export function convastrigger(func,e){
 		 if (moveFlag) {
 					
 					  let k = getXY(e, canvas);
-					  let r = Math.atan2(k.x - ox, oy - k.y);
-					  let hd = (Math.PI + r) / (2 * Math.PI);
-					  // console.log("k,r,hd", k, r, hd);
-					  // 半圆的滑动范围判断
-					  if (hd <= 1 && hd >= 0.5) {
-						  n1 = hd;
+					  
+					  let difx0=Math.abs(k.px-pointmoon.x);
+					  let dify0=Math.abs(k.py-pointmoon.y);
+					  let difx1=Math.abs(k.px-pointsun.x);
+					  let dify1=Math.abs(k.py-pointsun.y);
+					  //console.log(k,pointmoon,pointsun);
+					  let ismove=(difx0<ceps&&dify0<ceps)||(difx1<ceps&&dify1<ceps);
+					  ismove=true;
+					  if(ismove){ //在误差允许范围
+						  
+						  
+						  let r = Math.atan2(k.x - ox, oy - k.y);
+						  let hd = (Math.PI + r) / (2 * Math.PI);
+						  // console.log("k,r,hd", k, r, hd);
+						  // 半圆的滑动范围判断						 
+						  if (hd <= 1 && hd >= 0.5) {
+						  						  n1 = verifyradian( hd);
+						  }
+						  else{
+												
+						  						  n0 = verifyradian2(hd);
+							}
+						  draw();
+						  onprochange && onprochange(n0, n1);
 					  }
-					  else
-						  n0 = hd;
-					  draw();
-					  onprochange && onprochange(n0, n1);
+					  
+					  
 				  }
 	}
 	else {

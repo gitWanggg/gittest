@@ -1,5 +1,5 @@
 <template>
-	<view class="content">
+	<view class="content" >
 		<view class="base-flex-justify">
 			<view class="opt-btn">Cancel</view>
 			<view class="opt-btn">Done</view>
@@ -16,14 +16,14 @@
 
 		</view>
 
-		<view class="canvas-box">
+		<view class="canvas-box" @touchmove.stop.prevent="">
 			<view >
 				
-			 <canvas ref="canvasId" @touchstart.stop="touchstart"
-			  @touchmove.stop="touchmove" @touchend.stop="touchend"  
+			 <canvas ref="canvasId" @touchstart.stop.prevent="touchstart"
+			  @touchmove.stop.prevent="touchmove" @touchend.stop.prevent="touchend"  
 			
 			  canvas-id="canvasId" id="canvasId" 
-			  style="width: 400px; height: 300px;">
+			  style="width: 500rpx; height: 500rpx;display: block;margin: 0 auto;">
 			</canvas>
 				
 				
