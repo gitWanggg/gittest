@@ -194,7 +194,13 @@ function verifyradian2(rad){ //校验弧度
 	console.log("rad, npart,nf:",rad,npart, nf);
 	return nf;
 }
-
+ function isnear(x, y) { //是否在环周围
+            let dx = x - ox;
+            let dy = y - oy;
+            let dis = Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2));
+            let isinner = Math.abs(or - dis) < ring;
+            return isinner;
+        }
 export function convastrigger(func,e){
 	var timestamp=new Date().getTime();
 	let tsdiff=timestamp-tsnow;
@@ -209,13 +215,10 @@ export function convastrigger(func,e){
 					
 					  let k = getXY(e, canvas);
 					  
-					  let difx0=Math.abs(k.px-pointmoon.x);
-					  let dify0=Math.abs(k.py-pointmoon.y);
-					  let difx1=Math.abs(k.px-pointsun.x);
-					  let dify1=Math.abs(k.py-pointsun.y);
+					 
 					  //console.log(k,pointmoon,pointsun);
-					  let ismove=(difx0<ceps&&dify0<ceps)||(difx1<ceps&&dify1<ceps);
-					  ismove=true;
+					  let ismove=isnear(k.px,k.py);
+					  
 					  if(ismove){ //在误差允许范围
 						  
 						  
