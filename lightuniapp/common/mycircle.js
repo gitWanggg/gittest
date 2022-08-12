@@ -74,15 +74,15 @@
 	   function comlocation(x0,y0,disnow){ //计算小圆的中心坐标
 			let addX=x0>=ox;
 			let addY=y0>=oy;
-			
-		   let x=addX? ( ox + dispoint*(x0-ox)/disnow):( ox - dispoint*(ox-x0)/disnow);
-		   let y=addY? ( oy + dispoint*(y0-oy)/disnow):( oy - dispoint*(oy-y0)/disnow);
+				
+			let x=addX? ( ox + dispoint*(x0-ox)/disnow):( ox - dispoint*(ox-x0)/disnow);
+			let y=addY? ( oy + dispoint*(y0-oy)/disnow):( oy - dispoint*(oy-y0)/disnow);
+			   
 			x-=sqWidthHalf;
-			y-=sqWidthHalf;
-		  // if(addX){
-			 //  x+=8;
-		  // }
-		   return {x,y};
+			y-=sqWidthHalf;		 
+			x+=addX&&sqWidthHalf||(0-sqWidthHalf);
+			y+=addY&&sqWidthHalf||(0-sqWidthHalf);
+			return {x,y};
 	   }
 	   
 	   
@@ -172,7 +172,7 @@ function initvalues(){
 	convasheight=objuni.height;
 	convaswidth=objuni.width;
 	convasleft=objuni.left;
-	convastop=objuni.top;
+	convastop=objuni.top;	
 	ox=convaswidth/2;
 	oy=convasheight/2;
 	or=convaswidth/2-ring/2;
