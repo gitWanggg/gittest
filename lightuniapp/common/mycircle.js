@@ -1,3 +1,4 @@
+ const sqrt2=1.4142;
  let canvas = null;
         let ctx = null;
         let ox = 0;
@@ -21,6 +22,10 @@
 		let pmheidth=0;
 		
 		let ring=20;//圆环宽度
+		
+		let sqWidth=br*sqrt2;//正方形边长
+		
+		let sqWidthHalf=sqWidth/2;
 		
 		let dispoint=0;//小圆和大圆的原心的距离
 
@@ -70,9 +75,13 @@
 			let addX=x0>=ox;
 			let addY=y0>=oy;
 			
-		   let x=addX? ( ox + dispoint*(x0-ox)/disnow):( ox - dispoint*(ox-x0)/disnow-14.5);
-		   let y=addY? ( oy + dispoint*(y0-oy)/disnow):( oy - dispoint*(oy-y0)/disnow-14.5);
-		   
+		   let x=addX? ( ox + dispoint*(x0-ox)/disnow):( ox - dispoint*(ox-x0)/disnow);
+		   let y=addY? ( oy + dispoint*(y0-oy)/disnow):( oy - dispoint*(oy-y0)/disnow);
+			x-=sqWidthHalf;
+			y-=sqWidthHalf;
+		  // if(addX){
+			 //  x+=8;
+		  // }
 		   return {x,y};
 	   }
 	   
@@ -109,7 +118,7 @@
             ctx.beginPath();
             //let d = offset(r0, or);
 			
-            ctx.drawImage(sunsrc, 0, 0, 16, 16, pointsun.x,pointsun.y , 16, 16);
+            ctx.drawImage(sunsrc, 0, 0, 16, 16, pointsun.x,pointsun.y , sqWidth+1, sqWidth+1);
 			
             //ctx.arc(ox + d.x, oy + d.y, br, 0, 2 * Math.PI, true);
 
@@ -118,7 +127,7 @@
 
 			// pointmoon.x=ox + d2.x - br;
 			// pointmoon.y=oy + d2.y - br;
-            ctx.drawImage(moonsrc, 0, 0, 16, 16,pointmoon.x , pointmoon.y, 16, 16);
+            ctx.drawImage(moonsrc, 0, 0, 16, 16,pointmoon.x , pointmoon.y, sqWidth+1, sqWidth+1);
 
 
             ctx.drawImage(amsrc, 0, 0, 320, 320,pmx,pmy,pmwidth,pmheidth);
