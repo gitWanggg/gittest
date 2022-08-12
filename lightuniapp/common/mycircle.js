@@ -22,6 +22,7 @@
 		
 		let ring=20;//圆环宽度
 		
+		let dispoint=0;//小圆和大圆的原心的距离
 
         let onprochange = null;
 		
@@ -43,10 +44,39 @@
 		let objuni=null;
 
         function offset(r, d) {//根据弧度与距离计算偏移坐标
-            return { x: -Math.sin(r) * d, y: Math.cos(r) * d };
+            return { y: -Math.sin(r) * d, x: Math.cos(r) * d };
         };
 
+		function tanP(r){//r弧度
+			let x=0;
+			let y=0;
+			let fx=Math.cos(r)*or;
+			let fy =Math.sin(r)*or;
+			
+			if(r>=0&&r<=0.5*Math.PI){
+				x=ox + fx-br;
+				y=oy+fy-br;
+			}
+			else if(r>0.5*Math.PI&&r<=Math.PI){
+				x=ox-fx+br;
+				y=oy+fy
+			}
+		}
+
+		let r0=0-Math.PI;
+		let r1=0.5*Math.PI;
        
+	   function comlocation(x0,y0,disnow){ //计算小圆的中心坐标
+			let addX=x0>=ox;
+			let addY=y0>=oy;
+			
+		   let x=addX? ( ox + dispoint*(x0-ox)/disnow):( ox - dispoint*(ox-x0)/disnow-14.5);
+		   let y=addY? ( oy + dispoint*(y0-oy)/disnow):( oy - dispoint*(oy-y0)/disnow-14.5);
+		   
+		   return {x,y};
+	   }
+	   
+	   
 
         function draw() {
             ctx.clearRect(0, 0, convaswidth, convasheight);
@@ -70,26 +100,24 @@
             ctx.stroke();
 
 
-            ctx.fillStyle = "#3aa9f2"; //弧度轨迹
-            ctx.font = "80px Arial";
-            ctx.textAlign = "center";
-            ctx.textBaseline = "middle";
-            ctx.fillText(Math.round( n1 && ( 100 - n1 * 100)||n1) + "%", ox, oy);
-            ctx.fillStyle = "#fff";//滑动手柄圆
+            // ctx.fillStyle = "#3aa9f2"; //弧度轨迹
+            // ctx.font = "80px Arial";
+            // ctx.textAlign = "center";
+            // ctx.textBaseline = "middle";
+            // ctx.fillText(Math.round( n1 && ( 100 - n1 * 100)||n1) + "%", ox, oy);
+            // ctx.fillStyle = "#fff";//滑动手柄圆
             ctx.beginPath();
-            let d = offset(n1 * 2 * Math.PI, or);
-
-			pointsun.x=ox + d.x-br;
-			pointsun.y=oy + d.y-br;
+            //let d = offset(r0, or);
+			
             ctx.drawImage(sunsrc, 0, 0, 16, 16, pointsun.x,pointsun.y , 16, 16);
 			
             //ctx.arc(ox + d.x, oy + d.y, br, 0, 2 * Math.PI, true);
 
-            let d2 = offset(n0 * 2 * Math.PI, or);
+           // let d2 = offset(n0 * 2 * Math.PI, or);
            // ctx.arc(ox + d2.x, oy + d2.y, br, 0, 2 * Math.PI, true);
 
-			pointmoon.x=ox + d2.x - br;
-			pointmoon.y=oy + d2.y - br;
+			// pointmoon.x=ox + d2.x - br;
+			// pointmoon.y=oy + d2.y - br;
             ctx.drawImage(moonsrc, 0, 0, 16, 16,pointmoon.x , pointmoon.y, 16, 16);
 
 
@@ -128,7 +156,7 @@
         let isloadok = 0;
         function mydraw() {
             if(isloadok==3)
-                draw(0);
+                draw(dispoint,{px:ox,py:oy-dispoint});
         }
         
 function initvalues(){
@@ -143,6 +171,7 @@ function initvalues(){
 	pmy=ring;
 	pmheidth=(or-ring)*2+ring;
 	pmwidth=(or-ring)*2+ring;
+	dispoint=or-br;
 }		
 		
 export function createconvas(ctxarg,regchange,mepage) {
@@ -191,7 +220,7 @@ function verifyradian2(rad){ //校验弧度
 	
 	let nf = npart*partrad3;
 	
-	console.log("rad, npart,nf:",rad,npart, nf);
+	//console.log("rad, npart,nf:",rad,npart, nf);
 	return nf;
 }
  function isnear(x, y) { //是否在环周围
@@ -200,7 +229,17 @@ function verifyradian2(rad){ //校验弧度
             let dis = Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2));
             let isinner = Math.abs(or - dis) < ring;
             return isinner;
-        }
+}
+ function isnear2(x, y) { //是否在环周围
+            let dx = x - ox;
+            let dy = y - oy;
+            let dis = Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2));
+            let isinner = Math.abs(or - dis) < ring;
+            return{ isinner,dis};
+}
+
+
+
 export function convastrigger(func,e){
 	var timestamp=new Date().getTime();
 	let tsdiff=timestamp-tsnow;
@@ -214,25 +253,29 @@ export function convastrigger(func,e){
 		 if (moveFlag) {
 					
 					  let k = getXY(e, canvas);
-					  
-					 
+					  r0=Math.atan2(k.y-oy,k.x - ox);
+					  r1 = r0 <= 0 ? 0 - r0 : 2 * Math.PI - r0;
 					  //console.log(k,pointmoon,pointsun);
-					  let ismove=isnear(k.px,k.py);
-					  
+					  let ner=isnear2(k.px,k.py);
+					  let ismove=ner.isinner;
+					  let diss=ner.dis;
 					  if(ismove){ //在误差允许范围
-						  
 						  
 						  let r = Math.atan2(k.x - ox, oy - k.y);
 						  let hd = (Math.PI + r) / (2 * Math.PI);
+						   let dcom=comlocation(k.px,k.py,diss);
 						  // console.log("k,r,hd", k, r, hd);
 						  // 半圆的滑动范围判断						 
-						  if (hd <= 1 && hd >= 0.5) {
-						  						  n1 = verifyradian( hd);
+						  if (hd <= 1 && hd >= 0.5) {							 
+							  pointsun.x=dcom.x;
+							  pointsun.y=dcom.y;
+						  	n1 = verifyradian( hd);
 						  }
 						  else{
-												
-						  						  n0 = verifyradian2(hd);
-							}
+								pointmoon.x=dcom.x;
+								pointmoon.y=dcom.y;				
+						  		n0 = verifyradian2(hd);
+						}
 						  draw();
 						  onprochange && onprochange(n0, n1);
 					  }
